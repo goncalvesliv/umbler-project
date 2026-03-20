@@ -1,61 +1,127 @@
-const Request = window.Request
-const Headers = window.Headers
-const fetch = window.fetch
+import React, { useState } from 'react'
+import ReactDOM from 'react-dom/client'
 
-class Api {
-  async request (method, url, body) {
-    if (body) {
-      body = JSON.stringify(body)
+function DomainSearch() {
+  const [domain, setDomain] = useState('')
+  const [result, setResult] = useState(null)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const validate = (value) => {
+    if (!value || !value.trim()) return 'Digite um domínio.'
+    if (!value.includes('.')) return 'Domínio inválido. Ex: umbler.com'
+    if (value.startsWith('.') || value.endsWith('.')) return 'Domínio inválido.'
+    return null
+  }
+
+  const handleSearch = async () => {
+    const validationError = validate(domain)
+    if (validationError) {
+      setError(validationError)
+      setResult(null)
+      return
     }
 
-    const request = new Request('/api/' + url, {
-      method: method,
-      body: body,
-      credentials: 'same-origin',
-      headers: new Headers({
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+    setError('')
+    setLoading(true)
+    setResult(null)
+
+    try {
+      const resp = await fetch(`/api/domain/${domain.trim().toLowerCase()}`, {
+        headers: { 'Accept': 'application/json' }
       })
-    })
 
-    const resp = await fetch(request)
-    if (!resp.ok && resp.status !== 400) {
-      throw Error(resp.statusText)
-    }
-
-    const jsonResult = await resp.json()
-
-    if (resp.status === 400) {
-      jsonResult.requestStatus = 400
-    }
-
-    return jsonResult
-  }
-
-  async getDomain (domainOrIp) {
-    return this.request('GET', `domain/${domainOrIp}`)
-  }
-}
-
-const api = new Api()
-
-var callback = () => {
-  const btn = document.getElementById('btn-search')
-  const txt = document.getElementById('txt-search')
-  const result = document.getElementById('whois-results')
-
-  if (btn) {
-    btn.onclick = async () => {
-      const response = await api.getDomain(txt.value)
-      if (response) {
-        result.innerHTML = JSON.stringify(response, null, 4)
+      if (!resp.ok) {
+        const msg = await resp.text()
+        setError(msg || 'Erro ao consultar domínio.')
+        return
       }
+
+      const data = await resp.json()
+      setResult(data)
+    } catch (e) {
+      setError('Erro de conexão.')
+    } finally {
+      setLoading(false)
     }
   }
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleSearch()
+  }
+
+  return (
+    <div className="py-4">
+      <div className="input-group">
+        <input
+          className="form-control form-control-lg"
+          placeholder="Digite o domínio que deseja pesquisar..."
+          type="text"
+          value={domain}
+          onChange={(e) => setDomain(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <div className="input-group-btn">
+          <button
+            className="btn btn-success btn-lg"
+            onClick={handleSearch}
+            disabled={loading}
+          >
+            {loading ? 'Pesquisando...' : 'Pesquisar'}
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="alert alert-danger mt-2">{error}</div>
+      )}
+
+      {result && (
+        <div className="card mt-4">
+          <div className="card-header">
+            <h5 className="card-title mb-0">
+              Resultado para <strong className="text-primary">{result.name}</strong>
+            </h5>
+          </div>
+          <div className="list-group list-group-flush">
+            <div className="list-group-item">
+              <div className="row">
+                <div className="col-md-3">
+                  <small className="text-muted text-uppercase font-weight-bold">IP Registro A</small>
+                </div>
+                <div className="col-md-9">
+                  <span className="tag tag-primary tag-pill">{result.ip}</span>
+                </div>
+              </div>
+            </div>
+            <div className="list-group-item">
+              <div className="row">
+                <div className="col-md-3">
+                  <small className="text-muted text-uppercase font-weight-bold">Hospedado em</small>
+                </div>
+                <div className="col-md-9">
+                  <strong>{result.hostedAt}</strong>
+                </div>
+              </div>
+            </div>
+            <div className="list-group-item">
+              <div className="row">
+                <div className="col-md-3">
+                  <small className="text-muted text-uppercase font-weight-bold">Name Servers</small>
+                </div>
+                <div className="col-md-9">
+                  {result.nameServers && result.nameServers.map((ns, i) => (
+                    <span key={i} className="tag tag-default tag-pill mr-1">{ns}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
-if (document.readyState === 'complete' || (document.readyState !== 'loading' && !document.documentElement.doScroll)) {
-  callback()
-} else {
-  document.addEventListener('DOMContentLoaded', callback)
-}
+const root = ReactDOM.createRoot(document.getElementById('whois-results'))
+root.render(<DomainSearch />)

@@ -1,96 +1,81 @@
-
 # Desafio Umbler
 
-Esta é uma aplicação web que recebe um domínio e mostra suas informações de DNS.
+Aplicação web que recebe um domínio e exibe suas informações de DNS, consultando servidores DNS e WHOIS.
 
-Este é um exemplo real de sistema que utilizamos na Umbler.
+## Como rodar o projeto
 
-Ex: Consultar os dados de registro do dominio `umbler.com`
+### Pré-requisitos
 
-**Retorno:**
-- Name servers (ns254.umbler.com)
-- IP do registro A (177.55.66.99)
-- Empresa que está hospedado (Umbler)
+- .NET 6 SDK
+- Node.js
+- MySQL 8.0
 
-Essas informações são descobertas através de consultas nos servidores DNS e de WHOIS.
+### Configuração do banco de dados
 
-*Obs: WHOIS (pronuncia-se "ruís") é um protocolo específico para consultar informações de contato e DNS de domínios na internet.*
+Ajuste a connection string no `appsettings.json`:
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "server=localhost;port=3306;database=umbler;user=root;password=suasenha"
+}
+```
 
-Nesta aplicação, os dados obtidos são salvos em um banco de dados, evitando uma segunda consulta desnecessaria, caso seu TTL ainda não tenha expirado.
+### Comandos
+```bash
+# Instalar dependências e buildar o frontend
+npm install
+npm run build
 
-*Obs: O TTL é um valor em um registro DNS que determina o número de segundos antes que alterações subsequentes no registro sejam efetuadas. Ou seja, usamos este valor para determinar quando uma informação está velha e deve ser renovada.*
+# Executar a migration
+dotnet tool update --global dotnet-ef --version 6.0.0
+dotnet ef database update
 
-Tecnologias Backend utilizadas:
+# Rodar o projeto
+dotnet run
+```
 
-- C#
-- Asp.Net Core
-- MySQL
-- Entity Framework
+---
 
-Tecnologias Frontend utilizadas:
+## O que foi mudado e por quê
 
-- Webpack
-- Babel
-- ES7
+### Problema de ambiente
 
-Para rodar o projeto você vai precisar instalar:
+Ao tentar rodar o projeto pela primeira vez, dois problemas impediram a execução:
 
-- dotnet Core SDK (https://www.microsoft.com/net/download/windows dotnet Core 6.0.201 SDK)
-- Um editor de código, acoselhamos o Visual Studio ou VisualStudio Code. (https://code.visualstudio.com/)
-- NodeJs v17.6.0 para "buildar" o FrontEnd (https://nodejs.org/en/)
-- Um banco de dados MySQL (vc pode rodar localmente ou criar um site PHP gratuitamente no app da Umbler https://app.umbler.com/ que lhe oferece o banco Mysql adicionamente)
+- O comando `dotnet tool update --global dotnet-ef` instalava a versão 10, incompatível com .NET 6. Fixei a versão em `6.0.0`.
+- A connection string usava `uid=root` mas o driver MySQL para .NET espera `user=root`. Corrigi o formato.
 
-Com as ferramentas devidamente instaladas, basta executar os seguintes comandos:
+---
 
-Para "buildar" o javascript basta executar:
+### Backend
 
-`npm install`
-`npm run build`
+**Controller estava fazendo trabalho demais**
 
-Para Rodar o projeto:
+O `DomainController` original tinha toda a lógica de negócio misturada com infraestrutura, consultas ao WHOIS, DNS e banco de dados tudo no mesmo método. Além disso, o mesmo bloco de código aparecia duas vezes (uma para domínio novo, outra para domínio expirado).
 
-Execute a migration no banco mysql:
+Extraí essa lógica para um `DomainService` e criei a interface `IDomainService`. O controller agora só valida a entrada e delega pro service.
 
-`dotnet tool update --global dotnet-ef`
-`dotnet tool ef database update`
+**API expunha dados internos desnecessariamente**
 
-E após: 
+O endpoint retornava a entidade `Domain` direto, incluindo `id`, `ttl`, `updatedAt` e o texto bruto do WHOIS. Criei um `DomainViewModel` com só o que o frontend precisa: `name`, `ip`, `hostedAt` e `nameServers`. Os nameservers são parseados do texto WHOIS e retornados como lista.
 
-`dotnet run` (ou clique em "play" no editor do vscode)
+**Sem validação**
 
-# Objetivos:
+Qualquer string chegava no controller e causava exception. Adicionei uma validação simples: domínio vazio ou sem ponto retorna 400.
 
-Se você rodar o projeto e testar um domínio, verá que ele já está funcionando. Porém, queremos melhorar varios pontos deste projeto:
+---
 
-# FrontEnd
+### Testes
 
- - Os dados retornados não estão formatados, e devem ser apresentados de uma forma legível.
- - Não há validação no frontend permitindo que seja submetido uma requsição inválida para o servidor (por exemplo, um domínio sem extensão).
- - Está sendo utilizado "vanilla-js" para fazer a requisição para o backend, apesar de já estar configurado o webpack. O ideal seria utilizar algum framework mais moderno como ReactJs ou Blazor.  
+O teste `Domain_Moking_WhoisClient` estava comentado com um TODO justamente porque era impossível testar o `WhoisClient` era estático e instanciado diretamente no controller, sem como mockar.
 
-# BackEnd
+Com a extração para o `DomainService` e a interface `IDomainService`, todos os testes passam usando Moq, sem chamadas externas e sem banco de dados real. Também adicionei um teste para cobrir o caso de domínio inválido retornando 400.
 
- - Não há validação no backend permitindo que uma requisição inválida prossiga, o que ocasiona exceptions (erro 500).
- - A complexidade ciclomática do controller está muito alta, o ideal seria utilizar uma arquitetura em camadas.
- - O DomainController está retornando a própria entidade de domínio por JSON, o que faz com que propriedades como Id, Ttl e UpdatedAt sejam mandadas para o cliente web desnecessariamente. Retornar uma ViewModel (DTO) neste caso seria mais aconselhado.
+---
 
-# Testes
+### Frontend
 
- - A cobertura de testes unitários está muito baixa, e o DomainController está impossível de ser testado pois não há como "mockar" a infraestrutura.
- - O Banco de dados já está sendo "mockado" graças ao InMemoryDataBase do EntityFramework, mas as consultas ao Whois e Dns não. 
+O frontend original usava vanilla JS e exibia o JSON cru na tela, sem formatação e sem nenhuma validação antes de chamar o servidor.
 
-# Dica
+Migrei para React aproveitando o Webpack e Babel que já estavam configurados no projeto. Precisei adicionar `babel-preset-react` e `babel-plugin-transform-class-properties` para suporte a JSX, e atualizar a chamada do ReactDOM para `createRoot` (obrigatório no React 18+).
 
-- Este teste não tem "pegadinha", é algo pensado para ser simples. Aconselhamos a ler o código, e inclusive algumas dicas textuais deixadas nos testes unitários. 
-- Há um teste unitário que está comentado, que obrigatoriamente tem que passar.
-- Diferencial: criar mais testes.
-
-# Entrega
-
-- Enviei o link do seu repositório com o código atualizado.
-- O repositório deve estar público para que possamos acessar..
-- Modifique Este readme adicionando informações sobre os motivos das mudanças realizadas.
-
-# Modificações:
-
-- DESCREVA AQUI O OBJETIVO DAS MODIFICAÇÕES...
+O resultado agora mostra IP, empresa hospedeira e nameservers de forma organizada, valida o domínio antes de submeter e exibe feedback de carregamento enquanto a consulta acontece.
