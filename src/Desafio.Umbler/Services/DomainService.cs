@@ -57,8 +57,11 @@ namespace Desafio.Umbler.Services
             var record = result.Answers.ARecords().FirstOrDefault();
             var ip = record?.Address?.ToString();
 
-            var hostResponse = await WhoisClient.QueryAsync(ip);
+            // guard: se não encontrou IP, não consulta o host
+            if (string.IsNullOrEmpty(ip))
+                return (null, 0, response.Raw, null);
 
+            var hostResponse = await WhoisClient.QueryAsync(ip);
             return (ip, record?.TimeToLive ?? 0, response.Raw, hostResponse.OrganizationName);
         }
 
