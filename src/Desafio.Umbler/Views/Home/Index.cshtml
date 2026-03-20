@@ -2,48 +2,214 @@
     ViewData["Title"] = "Home Page";
 }
 
+<style>
+
+  .dns-wrapper {
+    max-width: 860px;
+    margin: 48px auto 0;
+    padding: 0 16px;
+  }
+
+  .dns-search-box {
+    display: flex !important;
+    gap: 12px;
+    align-items: center;
+    background: #fff !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    padding: 8px 8px 8px 20px !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07) !important;
+    transition: border-color 0.2s;
+  }
+
+  .dns-search-box:focus-within {
+    border-color: #4f8ef7 !important;
+  }
+
+  .dns-search-input {
+    flex: 1;
+    border: none !important;
+    outline: none !important;
+    font-size: 17px !important;
+    color: #1a202c !important;
+    background: transparent !important;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    height: auto !important;
+  }
+
+  .dns-search-input::placeholder {
+    color: #a0aec0;
+    font-weight: 400;
+  }
+
+  .dns-search-btn {
+    background: linear-gradient(135deg, #4f8ef7 0%, #2563eb 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 12px 28px !important;
+    font-size: 15px !important;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .dns-search-btn:hover:not(:disabled) {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+
+  .dns-search-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .dns-error {
+    margin-top: 16px;
+    padding: 12px 18px;
+    background: #fff5f5 !important;
+    border: 1px solid #fed7d7 !important;
+    border-radius: 10px;
+    color: #c53030 !important;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .dns-card {
+    margin-top: 32px;
+    background: #fff !important;
+    border-radius: 20px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important;
+    overflow: hidden;
+    animation: fadeUp 0.3s ease;
+  }
+
+  @@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .dns-card-header {
+    background: linear-gradient(135deg, #f0f6ff 0%, #e8f0fe 100%) !important;
+    padding: 24px 32px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    display: flex !important;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .dns-card-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #4f8ef7, #2563eb) !important;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .dns-card-title {
+    margin: 0 !important;
+    font-size: 20px !important;
+    font-weight: 700;
+    color: #1a202c !important;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .dns-card-subtitle {
+    margin: 2px 0 0 !important;
+    font-size: 13px;
+    color: #718096 !important;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .dns-card-body {
+    padding: 8px 0;
+  }
+
+  .dns-row {
+    display: flex !important;
+    align-items: flex-start;
+    padding: 18px 32px !important;
+    border-bottom: 1px solid #f7fafc !important;
+    gap: 16px;
+    transition: background 0.15s;
+  }
+
+  .dns-row:last-child {
+    border-bottom: none !important;
+  }
+
+  .dns-row:hover {
+    background: #f7fafc !important;
+  }
+
+  .dns-row-label {
+    width: 160px;
+    min-width: 160px;
+    font-size: 13px !important;
+    font-weight: 600;
+    color: #718096 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-top: 2px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .dns-row-value {
+    font-size: 15px;
+    color: #1a202c !important;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .dns-badge {
+    display: inline-block !important;
+    background: #ebf4ff !important;
+    color: #2563eb !important;
+    border-radius: 6px !important;
+    padding: 3px 10px !important;
+    font-size: 13px !important;
+    font-weight: 600;
+    margin: 3px 4px 3px 0;
+    font-family: 'Courier New', monospace !important;
+  }
+
+  .dns-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 32px;
+    color: #718096;
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .dns-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #4f8ef7;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @@keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+
 <div id="mm-0" class="mm-page mm-slideout">
-     
-<section id="domain-search">
-    <div class="container py-4 pb-md-5">			
-            <div id="box-result" class="row">
-                <div class="col-lg-9 col-md-8">   
-                        <label class="sr-only" for="txt-search">Domínio</label>
-                        <input class="form-control form-control-lg domain" id="txt-search" name="txt-search" placeholder="Digite o Domínio que deseja pesquisar" type="text" value="">
-                </div>
-                <div class="col-lg-3 col-md-4 text-xs-right">
-                    <button type="button" id="btn-search" name="name" class="btn btn-success btn-block btn-lg text-xs-center" data-loading-text="Pesquisando...">
-                        <i class="icon icon-search icon-white mr-1"></i>
-                        <span>Pesquisar...</span>
-                    </button>
-                </div>
-            </div>
-
-        <div class="container w-100">
-                <div class="row hide" id="whois-results">
-                </div>
+    <section id="domain-search">
+        <div class="container py-4 pb-md-5">
+            <div id="whois-results"></div>
         </div>
-    </div>
-</section>
-
-<!-- /#text-search -->
-
-<section id="domain-list">
-    <div class="container my-3 my-lg-5">        
-    </div>
-</section>
-
-<!-- /#text-search -->
-
-<section id="cta-list-ext" class="">
-    <div class="container text-xs-center py-5">  
-    </div>
-</section>
-
-<div id="table-list-ext" class="bg-faded bg-secondary-lighter" style="display:none">
-    <div class="container py-4">
-    </div>
-</div>
-
-<a id="back-top" href="javascript:void(0);" rel="nofollow" class="icon icon-arrow-upward icon-inverse icon-3x hidden-sm-down"></a>
+    </section>
 </div>

@@ -1,10 +1,11 @@
-﻿body {
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
     padding-top: 50px;
     padding-bottom: 20px;
 }
 
 /* Wrapping element */
-/* Set some basic padding to keep content from hitting the edges */
 .body-content {
     padding-left: 15px;
     padding-right: 15px;
@@ -16,20 +17,218 @@
     line-height: 1.4;
 }
 
-/* Make .svg files in the carousel display properly in older browsers */
 .carousel-inner .item img[src$=".svg"] {
     width: 100%;
 }
 
-/* QR code generator */
 #qrCode {
     margin: 15px;
 }
 
-/* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
-    /* Hide captions */
     .carousel-caption {
         display: none;
     }
+}
+
+/* ===================== */
+/* DNS Lookup            */
+/* ===================== */
+
+.dns-wrapper {
+  max-width: 860px;
+  margin: 48px auto 0;
+  padding: 0 16px;
+}
+
+.dns-search-box {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #fff;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 8px 8px 8px 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  transition: border-color 0.2s;
+}
+
+.dns-search-box:focus-within {
+  border-color: #4f8ef7;
+}
+
+.dns-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 17px;
+  color: #1a202c;
+  background: transparent;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+}
+
+.dns-search-input::placeholder {
+  color: #a0aec0;
+  font-weight: 400;
+}
+
+.dns-search-btn {
+  background: linear-gradient(135deg, #4f8ef7 0%, #2563eb 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+}
+
+.dns-search-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.dns-search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dns-error {
+  margin-top: 16px;
+  padding: 12px 18px;
+  background: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 10px;
+  color: #c53030;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dns-card {
+  margin-top: 32px;
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  overflow: hidden;
+  animation: fadeUp 0.3s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dns-card-header {
+  background: linear-gradient(135deg, #f0f6ff 0%, #e8f0fe 100%);
+  padding: 24px 32px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dns-card-icon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #4f8ef7, #2563eb);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.dns-card-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a202c;
+  font-family: 'Inter', sans-serif;
+}
+
+.dns-card-subtitle {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #718096;
+  font-family: 'Inter', sans-serif;
+}
+
+.dns-card-body {
+  padding: 8px 0;
+}
+
+.dns-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 18px 32px;
+  border-bottom: 1px solid #f7fafc;
+  gap: 16px;
+  transition: background 0.15s;
+}
+
+.dns-row:last-child {
+  border-bottom: none;
+}
+
+.dns-row:hover {
+  background: #f7fafc;
+}
+
+.dns-row-label {
+  width: 160px;
+  min-width: 160px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-top: 2px;
+  font-family: 'Inter', sans-serif;
+}
+
+.dns-row-value {
+  font-size: 15px;
+  color: #1a202c;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+}
+
+.dns-badge {
+  display: inline-block;
+  background: #ebf4ff;
+  color: #2563eb;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 3px 4px 3px 0;
+  font-family: 'Courier New', monospace;
+}
+
+.dns-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 32px;
+  color: #718096;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+}
+
+.dns-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #4f8ef7;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
